@@ -9,37 +9,12 @@ services:
     ports:
       - 15432:5432
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - 8081:15672
-
-  test-unit:
-    image: node:8
-    volumes:
-      - .:/opt/app
-    environment:
-      - NODE_ENV=production
-      - POSTGRESQL_HOST=postgresql.local
-      - POSTGRESQL_PORT=5432
-      - POSTGRESQL_USER=admin
-      - POSTGRESQL_PASSWORD=12345
-      - POSTGRESQL_NAME=dbname
-      - AMQP_HOST=amqp.local
-      - AMQP_PORT=5672
-      - AMQP_USER=guest
-      - AMQP_PASSWORD=guest
-    working_dir: /opt/app
-    command: "npm run test:unit"
-
   test-functional:
     image: node:8
     depends_on:
       - postgresql
-      - rabbitmq
     links:
       - postgresql:postgresql.local
-      - rabbitmq:amqp.local
     build: .
     environment:
       - NODE_ENV=production
@@ -48,15 +23,11 @@ services:
       - POSTGRESQL_USER=admin
       - POSTGRESQL_PASSWORD=12345
       - POSTGRESQL_NAME=dbname
-      - AMQP_HOST=amqp.local
-      - AMQP_PORT=5672
-      - AMQP_USER=guest
-      - AMQP_PASSWORD=guest
     working_dir: /opt/app
     command: >
       /bin/sh -c "
         #set -e
-        dockerize -wait tcp://$$POSTGRESQL_HOST:$$POSTGRESQL_PORT -wait tcp://$$AMQP_HOST:$$AMQP_PORT
+        dockerize -wait tcp://$$POSTGRESQL_HOST:$$POSTGRESQL_PORT
         npm run --silent migrate:schema
         npm run --silent migrate:seeds
         npm run --silent migrate:testSeeds
@@ -71,26 +42,22 @@ services:
   run:
     depends_on:
       - postgresql
-      - rabbitmq
     build: .
     links:
       - postgresql:postgresql.local
-      - rabbitmq:amqp.local
     environment:
+      - SERVICE_NAME=here-goes-service-name
       - NODE_ENV=production
       - POSTGRESQL_HOST=postgresql.local
       - POSTGRESQL_PORT=5432
       - POSTGRESQL_USER=admin
       - POSTGRESQL_PASSWORD=12345
       - POSTGRESQL_NAME=dbname
-      - AMQP_HOST=amqp.local
-      - AMQP_PORT=5672
-      - AMQP_USER=guest
-      - AMQP_PASSWORD=guest
     command: >
       /bin/sh -c "
         set -e
-        dockerize -wait tcp://$$POSTGRESQL_HOST:$$POSTGRESQL_PORT -wait tcp://$$AMQP_HOST:$$AMQP_PORT
+        env
+        dockerize -wait tcp://$$POSTGRESQL_HOST:$$POSTGRESQL_PORT
         npm run --silent migrate:schema
         npm run --silent migrate:seeds
         echo Starting application

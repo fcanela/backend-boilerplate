@@ -27,9 +27,9 @@ module.exports = async function setUpModels(db) {
       let modelName = file.split('.model.js')[0];
       models[modelName] = await model.define(db);
     } catch(err) {
-      return [err, null];
+      return [err, null]s;
     }
   }
 
-  return [null, model]s;
+  return [null, model];
 };

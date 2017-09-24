@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node loader.js",
+    "start": "node src/app.js",
     "lint": "eslint .",
     "test": "npm run test:unit",
     "test:unit": "mocha $(find src/ -path '*spec.js')",
@@ -29,9 +29,10 @@
   "dependencies": {
     "ajv": "^5.1.5",
     "body-parser": "^1.18.1",
-    "chorizo": "0.0.0",
+    "chorizo": "0.2.0",
     "express": "^4.15.4",
     "http-status": "^1.0.1",
-    "knex": "^0.13.0"
+    "knex": "^0.13.0",
+    "pg": "^7.3.0"
   }
 }
