@@ -1,7 +1,7 @@
 version: '2'
 services:
   postgresql:
-    image: mdillon/postgis:9.4-alpine
+    image: postgres:9
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=12345
@@ -31,7 +31,6 @@ services:
         npm run --silent migrate:schema
         npm run --silent migrate:seeds
         npm run --silent migrate:testSeeds
-        echo Starting application
         npm --silent start &
         sleep 5
         node -v
@@ -56,10 +55,8 @@ services:
     command: >
       /bin/sh -c "
         set -e
-        env
         dockerize -wait tcp://$$POSTGRESQL_HOST:$$POSTGRESQL_PORT
         npm run --silent migrate:schema
         npm run --silent migrate:seeds
-        echo Starting application
         npm --silent start
       "

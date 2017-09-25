@@ -1,6 +1,7 @@
 'use strict';
 
 const normalize = require('path').normalize;
+const logger = require('chorizo').for('migrations');
 const getConfiguration = require('../src/db/configuration');
 
 function connectKnex(uri) {
@@ -14,7 +15,7 @@ function connectKnex(uri) {
 
 const argv = process.argv;
 if (argv.length < 2) {
-  console.error('Needs one parameters: What to migrate');
+  logger.fatal('Needs one parameters: What to migrate');
   process.exit(1);
 }
 
@@ -30,7 +31,7 @@ const typeHandler = {
 const handler = typeHandler[type];
 if (!handler) {
   const options = Object.keys(typeHandler).join(',');
-  console.error(`Unrecognized migration type "${type}". Available options: ${options}`);
+  logger.fatal(`Unrecognized migration type "${type}". Available options: ${options}`);
   process.exit(1);
 }
 
@@ -38,9 +39,8 @@ let knex = connectKnex(uri);
 try {
   knex = connectKnex(uri);
 } catch (err) {
-  console.log('Error connecting to database');
-  console.error(err);
-  process.kill(process.pid);
+  logger.fatal('Error connecting to database', err);
+  process.exit(1);
 }
 
 handler()
@@ -48,14 +48,14 @@ handler()
     process.exit(0);
   })
   .catch(function(error) {
-    console.log(error);
+    logger.fatal(error);
     process.exit(1);
   });
 
 async function migrate(relativePath, tableName) {
   const directory = normalize(__dirname + relativePath);
 
-  console.log('Checking and running pending migrations from', directory);
+  logger.info('Checking and running pending migrations from ' + directory);
 
   const config = {
     tableName,
@@ -72,32 +72,30 @@ async function migrate(relativePath, tableName) {
 function printMigrationResult(executedMigrations) {
   const number = executedMigrations.length;
 
-  if (number === 0) return console.log('No pending migrations found');
+  if (number === 0) return logger.info('No pending migrations found');
 
-  console.log('Executed', number, 'migrations');
-  console.log('------------------------------------------------');
+  logger.info('Executed ' +  number + ' migrations');
   executedMigrations.forEach(function(migration) {
-    console.log(migration);
+    logger.log('Migrated ' + migration);
   });
-  console.log('------------------------------------------------');
 }
 
 async function migrateSchemas() {
-  console.log('Migrating schemas');
+  logger.info('Migrating schemas');
 
   const result = await migrate('/../src/db/migrations/', 'meta_estates_migrations');
   printMigrationResult(result);
 }
 
 async function migrateSeeds() {
-  console.log('Migrating seeds');
+  logger.info('Migrating seeds');
 
   const result = await migrate('/../src/db/seeds/', 'meta_estates_seeds');
   printMigrationResult(result);
 }
 
 async function migrateTestSeeds() {
-  console.log('Migrating test seeds');
+  logger.info('Migrating test seeds');
 
   const result = await migrate('/../test/functional/seeds/', 'meta_estates_test_seeds');
   printMigrationResult(result);

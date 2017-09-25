@@ -3,7 +3,7 @@
 const logger = require('chorizo').for('init');
 
 const promise = init().catch((err) => {
-  logger.fatal('Unable to run starting function', err);
+  logger.fatal('Something failed setting up the application', err);
   return err;
 });
 
@@ -13,44 +13,48 @@ async function init() {
   // Set up graceful exit
   const GracefulExitManager = require('./startup/graceful_exit');
   const gracefulExitManager = new GracefulExitManager();
+  gracefulExitManager.configure();
 
   // Set default node environment to development
   process.env.NODE_ENV = process.env.NODE_ENV || 'development';
   const env = process.env.NODE_ENV;
 
   // Setup database
+  /*
+  logger.info('Configuring database');
   const configureDB = require('./startup/db');
   let [dbErr, db] = await configureDB();
-  if (dbErr) logger.fatal('Unable to set up database', dbErr);
-  logger.info('Database configured');
+  if (dbErr) return logger.fatal('Unable to set up database', dbErr);
+  gracefulExitManager.knex = db;
 
   // Setup models
+  logger.info('Configuring models');
   let [modelsErr, models] = await require('./models')(db);
-  if (modelsErr) logger.fatal('Unable to set up models', modelsErr);
-  logger.info('Model configured');
+  if (modelsErr) return logger.fatal('Unable to set up models', modelsErr);
+  */
 
   // Setup express
+  logger.info('Configuring HTTP server');
   const configureExpress = require('./startup/express');
   let [serverErr, app] = await configureExpress();
-  if (serverErr) logger.fatal('Unable to set up server', serverErr);
-  logger.info('Server configured');
+  if (serverErr) return logger.fatal('Unable to set up server', serverErr);
 
-  /*
-  // TODO: API routes and controllers
-  const configureRoutes = require('./routes')
-  let [routesErr, routes] = configureRoutes(models, logger, dependency);
+  // API routes and controllers
+  logger.info('Configuring routes');
+  const configureRoutes = require('./startup/routes');
+  let [routesErr, routes] = await configureRoutes({});
   if (routesErr) logger.fatal('Unable to set up routes', routesErr);
-  logger.info('Routes configured');
-  */
 
   // Create server
   let host = process.env.HOST || '0.0.0.0';
   let port = process.env.PORT || 9000;
+  logger.info(`Making HTTP server start listening (${host}:${port})`);
   const server = app.listen(port, host, function serverListen() {
     host = server.address().address;
     port = server.address().port;
     logger.info(`App listening at "http://${host}:${port}" in "${env}" mode`);
   });
+  gracefulExitManager.httpServer = server;
 
   return server;
 }

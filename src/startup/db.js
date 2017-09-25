@@ -9,7 +9,6 @@ module.exports = async function configureDB() {
     const configuration = require('../db/configuration')();
     db = knex(configuration);
     await db.raw('select 1 as testDBUp');
-    console.log(db);
   } catch(err) {
     return [err, null];
   }

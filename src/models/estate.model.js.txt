@@ -1,9 +1,6 @@
 'use strict';
 
 const debug = require('debug')('service-models-estate');
-const knexPostgis = require('knex-postgis');
-
-const cartographyStandard = 4326;
 
 exports.name = 'estate';
 exports.define = function defineModel(db) {

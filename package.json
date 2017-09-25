@@ -29,7 +29,7 @@
   "dependencies": {
     "ajv": "^5.1.5",
     "body-parser": "^1.18.1",
-    "chorizo": "0.2.0",
+    "chorizo": "0.2.1",
     "express": "^4.15.4",
     "http-status": "^1.0.1",
     "knex": "^0.13.0",
