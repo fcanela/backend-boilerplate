@@ -1,7 +1,7 @@
 'use strict';
 
-const { normalize, join } = require('path');
-const { readdir, lstat } = require('./promised_fs');
+  const { normalize, join } = require('path');
+  const { readdir, lstat } = require('./promised_fs');
 
 /*
     if (name.indexOf('.js') > -1 && !isIgnored(name)) {
