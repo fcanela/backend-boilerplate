@@ -1,7 +1,6 @@
 'use strict';
 
 const hashes = require('../lib/hashes');
-const debug = require('debug')('service-models-user');
 
 exports.name = 'user';
 exports.define = function defineModel(db, models) {
@@ -22,7 +21,10 @@ exports.define = function defineModel(db, models) {
     },
 
     exists: async function existsByEmail(email) {
-      const result = await this.findByEmail(email) !== null;
+      const [ err, user ] = await this.findByEmail(email);
+      if (err) return [ err ];
+
+      const result = user !== null;
       return [ null, result ];
     },
 

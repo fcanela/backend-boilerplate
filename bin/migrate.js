@@ -76,7 +76,7 @@ function printMigrationResult(executedMigrations) {
 
   logger.info('Executed ' +  number + ' migrations');
   executedMigrations.forEach(function(migration) {
-    logger.log('Migrated ' + migration);
+    logger.info('Migrated ' + migration);
   });
 }
 

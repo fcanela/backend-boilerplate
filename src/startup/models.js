@@ -16,7 +16,7 @@ function goRequire() {
 
 async function configure(modelDefinition, db) {
   try {
-    const { name, define } = modelDefiniton;
+    const { name, define } = modelDefinition;
     const model = await define(db);
     return [ null, name, model ];
   } catch(err) {

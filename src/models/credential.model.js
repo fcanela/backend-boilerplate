@@ -9,9 +9,7 @@ exports.define = function defineModel(db, models) {
   const userTable = 'user';
   const userCredentialsTable = 'user_credential';
 
-  const logger = require('chorizo').for(exports.name + '-model');
-
-  return {
+    return {
     findById: async function findCredentialsById(id) {
       const results = await db(userCredentialsTable).where({ id }).select();
 

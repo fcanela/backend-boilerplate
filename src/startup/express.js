@@ -28,6 +28,7 @@ module.exports = function configureExpress(app) {
     const app = express();
 
     app.enable('trust proxy');
+    app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
     app.disable('x-powered-by');

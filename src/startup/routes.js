@@ -1,7 +1,6 @@
 'use strict';
 
 const { normalize, join } = require('path');
-const Router = require('express').Router;
 
 const logger = require('chorizo').for('setup-routes');
 const recursePath = require('../lib/recurse_path');
@@ -29,7 +28,7 @@ async function configure(router, routeFn, models) {
 }
 
 module.exports = async function configureRoutes(models) {
-  const router = Router();
+  const router = require('express').Router();
 
   const path = normalize(join(__dirname, '..', 'routes'));
   logger.info('Looking for routes in ' + path);

@@ -22,25 +22,25 @@ async function init() {
   // Setup database
   logger.info('Configuring database');
   const configureDB = require('./startup/db');
-  let [dbErr, db] = await configureDB();
+  const [dbErr, db] = await configureDB();
   if (dbErr) return logger.fatal('Unable to set up database', dbErr);
   gracefulExitManager.knex = db;
 
   // Setup models
   logger.info('Configuring models');
-  let [modelsErr, models] = await require('./startup/models')(db);
+  const [modelsErr, models] = await require('./startup/models')(db);
   if (modelsErr) return logger.fatal('Unable to set up models', modelsErr);
 
   // Setup express
   logger.info('Configuring HTTP server');
   const configureExpress = require('./startup/express');
-  let [serverErr, app] = await configureExpress();
+  const [serverErr, app] = await configureExpress();
   if (serverErr) return logger.fatal('Unable to set up server', serverErr);
 
   // API routes and controllers
   logger.info('Configuring routes');
   const configureRoutes = require('./startup/routes');
-  let [routesErr, router] = await configureRoutes({});
+  const [routesErr, router] = await configureRoutes(models);
   app.use(router);
   if (routesErr) logger.fatal('Unable to set up routes', routesErr);
 

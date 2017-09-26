@@ -5,12 +5,12 @@ module.exports = function configureRoute(models) {
 
   const logger = require('chorizo').for('user-register');
 
-  route.method = 'GET';
-  route.resource = '/test';
-  route.controller = function(req, res) {
+  route.method = 'POST';
+  route.resource = '/users';
+  route.controller = async function(req, res) {
     const body = req.body;
 
-    const exists = await models.user.exists(body.email);
+    const [ existsErr, exists ] = await models.user.exists(body.email);
     if (exists) {
       logger.warn('Email is already registered: ' + body.email);
       return res.status(201).json({

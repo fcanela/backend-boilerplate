@@ -10,7 +10,6 @@ services:
       - 15432:5432
 
   test-functional:
-    image: node:8
     depends_on:
       - postgresql
     links:

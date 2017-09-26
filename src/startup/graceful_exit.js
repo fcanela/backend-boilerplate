@@ -8,6 +8,8 @@ function GracefulExitManager(opts={}) {
 
   // Waiting in seconds before forcing application exit
   this.waitingTimeout = (opts.waitingTimeout || 5);
+
+  this.quitting = false;
 }
 
 const proto = GracefulExitManager.prototype;
@@ -25,6 +27,10 @@ function createShutdownHandler(self) {
 
 
   return function() {
+    // Avoid multiple exits
+    if (self.quitting) return;
+    self.quitting = true;
+
     const timeout = self.waitingTimeout;
     const message = `Finishing application execution. Waiting ${timeout} seconds for graceful exit`;
     self.logger.info(message);
@@ -39,7 +45,7 @@ function createShutdownHandler(self) {
 
       self.logger.info('Closing database connections');
       await self.knex.client.pool.drain();
-      self.knex.client.pool.clear();
+      //self.knex.client.pool.clear();
 
       process.exit();
     });
@@ -67,7 +73,7 @@ proto.configure = function() {
   });
 
   process.on('uncaughtException', function(err) {
-    logger.fatal('Uncaught Exception. ' + err);
+    logger.fatal('Uncaught Exception', err);
     logger.info('Proceding to graceful exit after an uncaught exception');
     process.exitCode = 1;
     process.kill(process.pid, 'SIGTERM');
