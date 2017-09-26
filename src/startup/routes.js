@@ -1,8 +1,9 @@
 'use strict';
 
-const path = require('path');
+const { normalize, join } = require('path');
 const Router = require('express').Router;
 
+const logger = require('chorizo').for('setup-routes');
 const recursePath = require('../lib/recurse_path');
 
 function goRequire() {
@@ -14,11 +15,23 @@ function goRequire() {
   }
 }
 
+async function configure(router, routeFn, models) {
+  try {
+    let route = await routeFn(models);
+    let { method, resource, controller } = route;
+
+    router[method.toLowerCase()](resource, controller);
+
+    return [ null ];
+  } catch(err) {
+    return [ err ] ;
+  }
+}
+
 module.exports = async function configureRoutes(models) {
-  const logger = require('chorizo').for('setup-routes');
   const router = Router();
 
-  const path = path.normalize(path.join(__dirname, '..', 'routes'));
+  const path = normalize(join(__dirname, '..', 'routes'));
   logger.info('Looking for routes in ' + path);
   let [readDirErr, files] = await recursePath(path, /.route.js$/);
   if (readDirErr) {
@@ -26,16 +39,21 @@ module.exports = async function configureRoutes(models) {
     return readDirErr;
   }
 
+  logger.info(`Found ${files.length} route files. Starting routes configuration`);
   for (let idx in files) {
     let fullpath = files[idx];
-    let [ importErr, configureRoute ] = goRequire(fullpath);
+    let [ importErr, routeFn ] = goRequire(fullpath);
     if (importErr) {
       logger.error('Error importing route ' + fullpath);
-      return [ importError ]
+      return [ importErr ];
     }
 
-    let route = configureRoute(models);
-    let { method, resource, controller } = route;
-    route[method.toLowerCase()](resource, controller);
+    let [ configureErr ] = await configure(router, routeFn, models);
+    if (configureErr) {
+      logger.error('Error configuring route ' + fullpath);
+      return [ configureErr ];
+    }
   }
+
+  return [ null , router];
 };

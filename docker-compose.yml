@@ -52,6 +52,9 @@ services:
       - POSTGRESQL_USER=admin
       - POSTGRESQL_PASSWORD=12345
       - POSTGRESQL_NAME=dbname
+      - PORT=80
+    ports:
+      - "9000:80"
     command: >
       /bin/sh -c "
         set -e

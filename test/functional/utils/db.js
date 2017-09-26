@@ -3,9 +3,8 @@
 const knex = require('knex');
 
 const srcPath = require('path').normalize(__dirname + '/../../../src');
-console.log('srcPath', srcPath);
 const getDBConfiguration = require(srcPath + '/db/configuration');
-const setUpModels = require(srcPath + '/models');
+const setUpModels = require(srcPath + '/startup/models');
 
 let cachedResponse;
 
@@ -14,7 +13,8 @@ module.exports = async function resolveDBUtils() {
     cachedResponse = {};
     const configuration = getDBConfiguration();
     cachedResponse.db = await knex(configuration);
-    cachedResponse.models = await setUpModels(cachedResponse.db);
+    const [err, models] = await setUpModels(cachedResponse.db);
+    cachedResponse.models = models;
   }
 
   return cachedResponse;

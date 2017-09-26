@@ -3,9 +3,11 @@
 module.exports = function configureRoute(models) {
   const route = {};
 
-  route.method: 'POST',
-  route.resource: '/lololo',
-  route.controller: function(req, res) {
+  route.method = 'GET';
+  route.resource = '/test';
+  route.controller = function(req, res) {
     res.json({ it: 'works!'});
-  }
+  };
+
+  return route;
 };

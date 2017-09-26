@@ -20,7 +20,6 @@ async function init() {
   const env = process.env.NODE_ENV;
 
   // Setup database
-  /*
   logger.info('Configuring database');
   const configureDB = require('./startup/db');
   let [dbErr, db] = await configureDB();
@@ -29,9 +28,8 @@ async function init() {
 
   // Setup models
   logger.info('Configuring models');
-  let [modelsErr, models] = await require('./models')(db);
+  let [modelsErr, models] = await require('./startup/models')(db);
   if (modelsErr) return logger.fatal('Unable to set up models', modelsErr);
-  */
 
   // Setup express
   logger.info('Configuring HTTP server');
@@ -42,7 +40,8 @@ async function init() {
   // API routes and controllers
   logger.info('Configuring routes');
   const configureRoutes = require('./startup/routes');
-  let [routesErr, routes] = await configureRoutes({});
+  let [routesErr, router] = await configureRoutes({});
+  app.use(router);
   if (routesErr) logger.fatal('Unable to set up routes', routesErr);
 
   // Create server
@@ -52,7 +51,7 @@ async function init() {
   const server = app.listen(port, host, function serverListen() {
     host = server.address().address;
     port = server.address().port;
-    logger.info(`App listening at "http://${host}:${port}" in "${env}" mode`);
+    logger.info(`Service listening at "http://${host}:${port}" in "${env}" mode`);
   });
   gracefulExitManager.httpServer = server;
 

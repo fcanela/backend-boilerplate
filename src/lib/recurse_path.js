@@ -1,27 +1,20 @@
 'use strict';
 
-  const { normalize, join } = require('path');
-  const { readdir, lstat } = require('./promised_fs');
-
-/*
-    if (name.indexOf('.js') > -1 && !isIgnored(name)) {
-      fullpath = fullpath.replace('.js', '');
-
-      let controller = require(fullpath)(models, logger, errorHandler);
-      loadController(controller, fullpath);
-    }
-*/
+const { normalize, join } = require('path');
+const { readdir, lstat } = require('./promised_fs');
 
 async function recurse(path, regex, results) {
-  const [ readErr, content ] = await readdir(dir);
-  if (readErr) return readErr;
+  const [ readErr, content ] = await readdir(path);
+  if (readErr) return [ readErr ];
 
   for (let idx in content) {
     let name = content[idx];
-    let fullpath = normalize(join(dir, name));
-    let stats = await lstat(fullpath);
+    let fullpath = normalize(join(path, name));
 
-    if (stats.isDirectory(fullpath)) {
+    const [ statsErr, stats] = await lstat(fullpath);
+    if (statsErr) return [ statsErr ];
+
+    if (stats.isDirectory()) {
       let [ err ] = recurse(fullpath, regexes, handler);
       if (err) return [ err ];
     }
@@ -29,6 +22,8 @@ async function recurse(path, regex, results) {
     if (!regex.test(name)) continue;
     results.push(fullpath);
   }
+
+  return [ null, results ];
 }
 
 module.exports = async function recursePath(path, regex) {
