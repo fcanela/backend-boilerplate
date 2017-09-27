@@ -85,36 +85,6 @@ exports.down = async function(db) {
   fs.writeFileSync(path, content);
 }
 
-function createTestSQLSeed(name) {
-  const migrationsPath = normalize(__dirname + '/../test/functional/seeds/');
-  const timestamp = getTimestamp();
-  const fileName = `${timestamp}_${name}.seed.js`;
-  const path = migrationsPath + fileName;
-
-  const content = `'use strict';
-
-const getSeedsUtils = require('../utils').getSeedsUtils;
-
-const tableName = 'tablename';
-
-exports.up = async function(db) {
-  const utils = await getSeedsUtils();
-  const storage = utils.storage;
-  const random = utils.random;
-
-  const entity = random.entityName();
-  const id = await db(tableName).insert(entity).returning('id');
-};
-
-exports.down = async function(db) {
-};
-  `;
-
-  console.log('Writting to', path);
-
-  fs.writeFileSync(path, content);
-}
-
 const argv = process.argv;
 if (argv.length < 3) {
   console.error('Needs two parameters: File type and name');
@@ -126,8 +96,7 @@ const name = argv[3];
 
 const typeHandler = {
   'migration': createSQLMigration,
-  'seed': createSQLSeed,
-  'test_seed': createTestSQLSeed
+  'seed': createSQLSeed
 };
 
 const handler = typeHandler[type];

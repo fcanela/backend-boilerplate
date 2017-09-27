@@ -9,7 +9,7 @@ exports.up = async function(db) {
     table.string('email').unique();
     table.integer('phoneInternationalPrefix').unsigned();
     table.integer('phone').unsigned().unique();
-    table.string('name').notNullable;
+    table.string('name').notNullable();
     table.string('surname');
     table.timestamp('createdAt').defaultsTo(db.fn.now());
   });
