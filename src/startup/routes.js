@@ -19,7 +19,15 @@ async function configure(router, routeFn, models) {
     let route = await routeFn(models);
     let { method, resource, controller } = route;
 
-    router[method.toLowerCase()](resource, controller);
+    router[method.toLowerCase()](resource, async function controlErrorWrapper(req, res, next) {
+      const logger = require('chorizo').for('routes-error-handler');
+      try {
+        await controller(req, res, next);
+      } catch(err) {
+        logger.error(`Uncaught error in ${method.toUpperCase()} ${resource}`, err);
+        res.status(500).json();
+      }
+    });
 
     return [ null ];
   } catch(err) {
@@ -32,7 +40,7 @@ module.exports = async function configureRoutes(models) {
 
   const path = normalize(join(__dirname, '..', 'routes'));
   logger.info('Looking for routes in ' + path);
-  let [readDirErr, files] = await recursePath(path, /.route.js$/);
+  let [readDirErr, files] = await recursePath(path, /\.route\.js$/);
   if (readDirErr) {
     logger.error('Unable to enumerate routes in ' + path);
     return readDirErr;

@@ -4,6 +4,8 @@ const normalize = require('path').normalize;
 const logger = require('chorizo').for('migrations');
 const getConfiguration = require('../src/db/configuration');
 
+const serviceName = process.env.SERVICE_NAME || 'unknown_service_name';
+
 function connectKnex(uri) {
   const configuration = getConfiguration();
   if (uri) {
@@ -83,21 +85,21 @@ function printMigrationResult(executedMigrations) {
 async function migrateSchemas() {
   logger.info('Migrating schemas');
 
-  const result = await migrate('/../src/db/migrations/', 'meta_estates_migrations');
+  const result = await migrate('/../src/db/migrations/', `meta_${serviceName}_migrations`);
   printMigrationResult(result);
 }
 
 async function migrateSeeds() {
   logger.info('Migrating seeds');
 
-  const result = await migrate('/../src/db/seeds/', 'meta_estates_seeds');
+  const result = await migrate('/../src/db/seeds/', `meta_${serviceName}_seeds`);
   printMigrationResult(result);
 }
 
 async function migrateTestSeeds() {
   logger.info('Migrating test seeds');
 
-  const result = await migrate('/../test/functional/seeds/', 'meta_estates_test_seeds');
+  const result = await migrate('/../test/functional/seeds/', `meta_${serviceName}_test_seeds`);
   printMigrationResult(result);
 }
 

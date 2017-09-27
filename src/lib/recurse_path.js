@@ -15,7 +15,7 @@ async function recurse(path, regex, results) {
     if (statsErr) return [ statsErr ];
 
     if (stats.isDirectory()) {
-      let [ err ] = recurse(fullpath, regexes, handler);
+      let [ err ] = await recurse(fullpath, regex, results);
       if (err) return [ err ];
     }
 

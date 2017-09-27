@@ -41,8 +41,8 @@ async function init() {
   logger.info('Configuring routes');
   const configureRoutes = require('./startup/routes');
   const [routesErr, router] = await configureRoutes(models);
-  app.use(router);
   if (routesErr) logger.fatal('Unable to set up routes', routesErr);
+  app.use(router);
 
   // Create server
   let host = process.env.HOST || '0.0.0.0';

@@ -1,11 +1,13 @@
 'use strict';
 
+const httpStatus = require('http-status');
+
 module.exports = function configureRoute(models) {
   const route = {};
 
-  const logger = require('chorizo').for('user-register');
+  const logger = require('chorizo').for('create-user');
 
-  route.method = 'POST';
+  route.method = 'post';
   route.resource = '/users';
   route.controller = async function(req, res) {
     const body = req.body;
@@ -13,7 +15,7 @@ module.exports = function configureRoute(models) {
     const [ existsErr, exists ] = await models.user.exists(body.email);
     if (exists) {
       logger.warn('Email is already registered: ' + body.email);
-      return res.status(201).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         error: 'EMAIL_ALREADY_REGISTERED'
       });
     }
@@ -30,7 +32,8 @@ module.exports = function configureRoute(models) {
     };
     const [ credErr, credentials ] = await models.credential.create(credentialProperties);
 
-    res.status(201).json(replyBody);
+    res.status(httpStatus.CREATED).json(replyBody);
+    logger.info(`Created user ${body.email} (User id: ${newUser.id})`);
   };
 
   return route;
