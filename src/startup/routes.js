@@ -14,10 +14,30 @@ function goRequire() {
   }
 }
 
-async function configure(router, routeFn, models) {
+async function injectDepsToRoute(routeFn, models) {
   try {
     let route = await routeFn(models);
-    let { method, resource, controller } = route;
+    return [ null, route ];
+  } catch(err) {
+    return [ err ] ;
+  }
+}
+
+function useMiddleware(router, method, resource, middleware) {
+  try {
+    router[method.toLowerCase()](resource, middleware);
+    return [ null ];
+  } catch(err) {
+    return [ err ];
+  }
+}
+
+async function configureSchemaCheck(path, route) {
+}
+
+async function configureRoute(router, route) {
+  try {
+    const { method, resource, controller } = route;
 
     router[method.toLowerCase()](resource, async function controlErrorWrapper(req, res, next) {
       const logger = require('chorizo').for('routes-error-handler');
@@ -55,7 +75,13 @@ module.exports = async function configureRoutes(models) {
       return [ importErr ];
     }
 
-    let [ configureErr ] = await configure(router, routeFn, models);
+    let [ injectErr, route ] = await injectDepsToRoute(routeFn, models);
+    if (injectErr) {
+      logger.error('Error extracting parameters from route ' + fullpath);
+      return [ configureErr ];
+    }
+
+    let [ configureErr ] = await configureRoute(router, route);
     if (configureErr) {
       logger.error('Error configuring route ' + fullpath);
       return [ configureErr ];
