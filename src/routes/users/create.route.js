@@ -27,8 +27,7 @@ module.exports = function configureRoute(models) {
 
     const credentialProperties = {
       id: newUser.id,
-      password: body.password,
-      hash: body.hash
+      password: body.password
     };
     const [ credErr, credentials ] = await models.credential.create(credentialProperties);
 

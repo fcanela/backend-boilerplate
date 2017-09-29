@@ -3,7 +3,10 @@
 const { normalize, join } = require('path');
 
 const logger = require('chorizo').for('setup-routes');
+
 const recursePath = require('../lib/recurse_path');
+const importExtension = require('../lib/import_extension');
+const createSchemaMiddleware = require('../lib/schema_validation_middleware');
 
 function goRequire() {
   try {
@@ -33,11 +36,34 @@ function useMiddleware(router, method, resource, middleware) {
 }
 
 async function configureSchemaCheck(path, route) {
+  const [ importBodyErr, bodySchema ] = importExtension(path, 'body.schema');
+  if (importBodyErr) {
+    logger.error('Error importing body schema for route ' + path);
+    return [ importBodyErr ];
+  }
+
+  const [ importQueryErr, querySchema ] = importExtension(path, 'query.schema');
+  if (importQueryErr) {
+    logger.error('Error importing query schema for route ' + path);
+    return [ importQueryErr ];
+  }
+
+  if (!bodySchema && !querySchema) {
+    return [ null, null ];
+  }
+
+  const [ createErr, middleware ] = createSchemaMiddleware(bodySchema, querySchema);
+  if (createErr) {
+    logger.error('Error creating schema validation middleware for ' + path);
+    return [ createErr ];
+  }
+    return [ null, middleware ];
 }
 
 async function configureRoute(router, route) {
   try {
     const { method, resource, controller } = route;
+
 
     router[method.toLowerCase()](resource, async function controlErrorWrapper(req, res, next) {
       const logger = require('chorizo').for('routes-error-handler');
@@ -79,6 +105,13 @@ module.exports = async function configureRoutes(models) {
     if (injectErr) {
       logger.error('Error extracting parameters from route ' + fullpath);
       return [ configureErr ];
+    }
+
+      let [ schemaErr, schemaMiddleware ] = await configureSchemaCheck(fullpath, route);
+    if (schemaErr) return [ schemaErr ];
+    if (schemaMiddleware) {
+      let [ insertSchemaErr ] = useMiddleware(router, route.method, route.resource, schemaMiddleware);
+      if (insertSchemaErr) return [ insertSchemaErr ];
     }
 
     let [ configureErr ] = await configureRoute(router, route);

@@ -14,11 +14,11 @@ function createValidator(ajv, schema) {
   }
 }
 
-function respond(res, ajv) {
+function respond(res, error) {
   res.status(400).json({
     error: {
       code: 'SCHEMA',
-      description: ajv.errorsText()
+      details: error
     }
   });
 }
@@ -27,7 +27,7 @@ module.exports = function generateMiddleware(bodySchema, querySchema) {
   const ajv = new Ajv();
 
   if (bodySchema) {
-    const [ compileBodyErr, validateBody ] = createValidator(ajv, bodySchema);
+    var [ compileBodyErr, validateBody ] = createValidator(ajv, bodySchema);
     if (compileBodyErr) {
       logger.error('Unable to compile body schema');
       return [ compileBodyErr ];
@@ -35,7 +35,7 @@ module.exports = function generateMiddleware(bodySchema, querySchema) {
   }
 
   if (querySchema) {
-    const [ compileQueryErr, validateQuery ] = createValidator(ajv, querySchema);
+    var [ compileQueryErr, validateQuery ] = createValidator(ajv, querySchema);
     if (compileQueryErr) {
       logger.error('Unable to compile query schema');
       return [ compileQueryErr ];
@@ -49,15 +49,15 @@ module.exports = function generateMiddleware(bodySchema, querySchema) {
 
     if (bodySchema) {
       if (!validateBody(req.body)) {
-        logger.warn(`Invalid body sent to ${req.method} ${req.url}: ${ajv.errorsText}`);
-        return respond(res, ajv);
+        logger.warn(`Invalid body sent to ${req.method} ${req.url}: ${JSON.stringify(validateBody.errors)}`);
+        return respond(res, validateBody.errors);
       }
     }
 
     if (querySchema) {
       if (!validateBody(req.query)) {
-        logger.warn(`Invalid body sent to ${req.method} ${req.url}: ${ajv.errorsText}`);
-        return respond(res, ajv);
+        logger.warn(`Invalid query sent to ${req.method} ${req.url}: ${JSON.stringify(validateQuery.errors)}`);
+        return respond(res, validateQuery.errors);
       }
     }
 
