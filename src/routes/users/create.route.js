@@ -16,7 +16,9 @@ module.exports = function configureRoute(models) {
     if (exists) {
       logger.warn('Email is already registered: ' + body.email);
       return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'EMAIL_ALREADY_REGISTERED'
+        error: {
+          code: 'EMAIL_ALREADY_REGISTERED'
+        }
       });
     }
 
