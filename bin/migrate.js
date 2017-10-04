@@ -26,7 +26,8 @@ const uri = argv[3];
 
 const typeHandler = {
   'schemas:latest': migrateSchemas,
-  'seeds:latest': migrateSeeds
+  'seeds:latest': migrateSeeds,
+  'test-seeds:latest': migrateTestSeeds
 };
 
 const handler = typeHandler[type];
@@ -92,5 +93,12 @@ async function migrateSeeds() {
   logger.info('Migrating seeds');
 
   const result = await migrate('/../src/db/seeds/', `meta_${serviceName}_seeds`);
+  printMigrationResult(result);
+}
+
+async function migrateTestSeeds() {
+  logger.info('Migrating test seeds');
+
+  const result = await migrate('/../test/functional/seeds/', `meta_${serviceName}_test_seeds`);
   printMigrationResult(result);
 }

@@ -32,7 +32,7 @@ module.exports = async function configureModels(db) {
   let [readDirErr, files] = await recursePath(path, /\.model\.js$/);
   if (readDirErr) {
     logger.error('Unable to enumerate models in ' + path);
-    return readDirErr;
+    return [ readDirErr ];
   }
 
   logger.info(`Found ${files.length} model files. Starting models configuration`);

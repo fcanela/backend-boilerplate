@@ -6,24 +6,22 @@
   "scripts": {
     "start": "node src/app.js",
     "lint": "eslint .",
-    "test": "npm run test:unit",
-    "test:unit": "mocha $(find src/ -path '*spec.js')",
-    "test:functional": "mocha $(find test/functional -path '*test.js') --",
-    "create:migration": "node ./bin/create.js migration",
-    "create:seed": "node ./bin/create.js seed",
-    "create:testSeed": "node ./bin/create.js test_seed",
-    "migrate:schema": "node ./bin/migrate.js schemas:latest",
-    "migrate:seeds": "node ./bin/migrate.js seeds:latest",
-    "migrate:testSeeds": "node ./bin/migrate.js test_seeds:latest"
+    "test": "npm run test:functional",
+    "test:functional": "mocha $(find test/functional -path '*spec.js') --",
+    "create": "node ./bin/create.js",
+    "migrate": "node ./bin/migrate.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "chai": "^4.0.0",
+    "chai": "^4.1.2",
+    "chai-http": "^3.0.0",
     "eslint": "^4.5.0",
+    "handlebars": "^4.0.10",
     "mocha": "^3.4.2",
     "node-json-db": "^0.7.3",
     "proxyquire": "^1.8.0",
+    "randomatic": "^1.1.7",
     "sinon": "^2.3.5"
   },
   "dependencies": {
@@ -35,6 +33,7 @@
     "http-status": "^1.0.1",
     "jsonwebtoken": "^8.0.1",
     "knex": "^0.13.0",
+    "mocha": "^3.5.3",
     "pg": "^7.3.0"
   }
 }

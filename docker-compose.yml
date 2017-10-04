@@ -34,7 +34,38 @@ services:
         set -e
         env
         dockerize -wait tcp://$$POSTGRESQL_HOST:$$POSTGRESQL_PORT
-        npm run --silent migrate:schema
-        npm run --silent migrate:seeds
+        npm run --silent migrate schemas:latest
+        npm run --silent migrate seeds:latest
         npm --silent start
       "
+
+  test-functional:
+    image: node:8
+    depends_on:
+      - postgresql
+    links:
+      - postgresql:postgresql.local
+    build: .
+    environment:
+      - SERVICE_NAME=here-goes-service-name
+      - NODE_ENV=production
+      - POSTGRESQL_HOST=postgresql.local
+      - POSTGRESQL_PORT=5432
+      - POSTGRESQL_USER=admin
+      - POSTGRESQL_PASSWORD=12345
+      - POSTGRESQL_NAME=dbname
+      - TOKEN_INTEGRITY_SECRET=gjZ8MavNlKA3m0T47WUHGFswMFxAnpOobSB
+      - TOKEN_CIPHER_SECRET=bOsK4QCshvu36Iv7WDDpsd19PuJF2QUfGY4
+      - TOKEN_TIMEOUT_SECS=7200
+      - PORT=80
+    working_dir: /opt/app
+    command: >
+      /bin/sh -c "
+        set -e
+        dockerize -wait tcp://$$POSTGRESQL_HOST:$$POSTGRESQL_PORT
+        npm run --silent migrate schemas:latest
+        npm run --silent migrate seeds:latest
+        npm run --silent migrate test-seeds:latest
+        npm run test:functional
+      "
+

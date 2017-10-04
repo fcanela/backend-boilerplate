@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const normalize = require('path').normalize;
+const handlebars = require('handlebars');
 
 function pad(date) {
   date = date.toString();
@@ -11,92 +12,95 @@ function pad(date) {
 function getTimestamp() {
   const now = new Date();
   return now.getFullYear().toString() +
-    pad(now.getMonth() + 1) +
-    pad(now.getDate()) +
-    pad(now.getHours()) +
-    pad(now.getMinutes()) +
-    pad(now.getSeconds());
-}
-
-function createSQLMigration(name) {
-  const migrationsPath = normalize(__dirname + '/../src/db/migrations/');
-  const timestamp = getTimestamp();
-  const fileName = `${timestamp}_${name}.migration.js`;
-  const path = migrationsPath + fileName;
-
-  const content = `'use strict';
-
-const tableName = '';
-
-exports.up = async function(db) {
-  await db.schema.createTable(tableName, function(table) {
-    table.increments('id');
-
-    table.timestamp('createdAt').defaultsTo(db.fn.now());
-  });
-};
-
-exports.down = async function(db) {
-  await db.schema.dropTable(tableName);
-};
-`;
-
-  console.log('Writting to', path);
-
-  fs.writeFileSync(path, content);
-}
-
-function createSQLSeed(name) {
-  const migrationsPath = normalize(__dirname + '/../src/db/seeds/');
-  const timestamp = getTimestamp();
-  const fileName = `${timestamp}_${name}.seed.js`;
-  const path = migrationsPath + fileName;
-
-  const content = `'use strict';
-
-const tableName = '';
-
-const values = [
-  {
-    field: 'value'
+      pad(now.getMonth() + 1) +
+      pad(now.getDate()) +
+      pad(now.getHours()) +
+      pad(now.getMinutes()) +
+      pad(now.getSeconds());
   }
-];
 
-exports.up = async function(db) {
-  await db.transaction(async function(t) {
-    await db.batchInsert(tableName, values).transacting(t);
-  });
-};
+  function createSQLMigration(name) {
+    const migrationsPath = normalize(__dirname + '/../src/db/migrations/');
+    const timestamp = getTimestamp();
+    const fileName = `${timestamp}_${name}.migration.js`;
+    const path = migrationsPath + fileName;
 
-exports.down = async function(db) {
-  const promises = [];
+    const template = fs.readFileSync(__dirname + '/create_templates/migration.js').toString();
+    const content = handlebars.compile(template)({ name });
 
-  values.map(function(value) {
-    const promise = db(tableName).where('field', value.field).del();
-    promises.push(promise);
-  });
+    console.log('Writting to', path);
 
-  await Promise.all(promises);
-};
-`;
+    fs.writeFileSync(path, content);
+  }
 
-  console.log('Writting to', path);
+  function createSQLSeed(name) {
+    const migrationsPath = normalize(__dirname + '/../src/db/seeds/');
+    const timestamp = getTimestamp();
+    const fileName = `${timestamp}_${name}.seed.js`;
+    const path = migrationsPath + fileName;
 
-  fs.writeFileSync(path, content);
-}
+    const template = fs.readFileSync(__dirname + '/create_templates/seed.js').toString();
+    const content = handlebars.compile(template)({ name });
 
-const argv = process.argv;
-if (argv.length < 3) {
-  console.error('Needs two parameters: File type and name');
-  process.exit(1);
-}
+    console.log('Writting to', path);
 
-const type = argv[2];
-const name = argv[3];
+    fs.writeFileSync(path, content);
+  }
 
-const typeHandler = {
-  'migration': createSQLMigration,
-  'seed': createSQLSeed
+  function createTestSQLSeed(name) {
+    const migrationsPath = normalize(__dirname + '/../test/functional/seeds/');
+    const timestamp = getTimestamp();
+    const fileName = `${timestamp}_${name}.seed.js`;
+    const path = migrationsPath + fileName;
+
+    const template = fs.readFileSync(__dirname + '/create_templates/test_seed.js').toString();
+    const content = handlebars.compile(template)({ name });
+
+    console.log('Writting to', path);
+
+    fs.writeFileSync(path, content);
+  }
+
+  function createFake(name) {
+    const basePath = normalize(__dirname + '/../test/functional/fake/');
+    const fileName = `${name}.fake.js`;
+    const path = basePath + fileName;
+
+    const template = fs.readFileSync(__dirname + '/create_templates/fake.js').toString();
+    const content = handlebars.compile(template)({ name });
+
+    console.log('Writting to', path);
+
+    fs.writeFileSync(path, content);
+  }
+
+  function createTest(name) {
+    const basePath = normalize(__dirname + '/../test/functional/');
+    const fileName = `${name}.spec.js`;
+    const path = basePath + fileName;
+
+    const template = fs.readFileSync(__dirname + '/create_templates/test.js').toString();
+    const content = handlebars.compile(template)({ name });
+
+    console.log('Writting to', path);
+
+    fs.writeFileSync(path, content);
+  }
+
+  const argv = process.argv;
+  if (argv.length < 3) {
+    console.error('Needs two parameters: File type and name');
+    process.exit(1);
+  }
+
+  const type = argv[2];
+  const name = argv[3];
+
+  const typeHandler = {
+    'migration': createSQLMigration,
+    'seed': createSQLSeed,
+    'test-seed': createTestSQLSeed,
+    'fake': createFake
 };
 
 const handler = typeHandler[type];

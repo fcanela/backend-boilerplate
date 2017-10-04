@@ -89,7 +89,7 @@ module.exports = async function configureRoutes(models) {
   let [readDirErr, files] = await recursePath(path, /\.route\.js$/);
   if (readDirErr) {
     logger.error('Unable to enumerate routes in ' + path);
-    return readDirErr;
+    return [ readDirErr ];
   }
 
   logger.info(`Found ${files.length} route files. Starting routes configuration`);

@@ -3,7 +3,7 @@
 module.exports = {
   type: 'object',
   additionalProperties: false,
-  required: ['name', 'surname', 'email', 'password'],
+  required: ['name', 'email', 'password'],
   properties: {
     name: {
       type: 'string'
