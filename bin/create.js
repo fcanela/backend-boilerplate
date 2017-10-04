@@ -100,7 +100,8 @@ function getTimestamp() {
     'migration': createSQLMigration,
     'seed': createSQLSeed,
     'test-seed': createTestSQLSeed,
-    'fake': createFake
+    'fake': createFake,
+    'test': createTest,
 };
 
 const handler = typeHandler[type];
